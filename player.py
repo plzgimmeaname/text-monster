@@ -18,3 +18,5 @@ class Player:
             self.inventory[object] -= 1
         else:
             return False
+
+    # add inventory display functions
