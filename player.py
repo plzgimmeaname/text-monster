@@ -10,7 +10,7 @@ class Player:
         return direction
 
     def pickup(self, object):
-        self.inventory.get(object, 0) += 1
+        self.inventory[object] = self.inventory.get(object, 0) + 1
         print(f'You now have {self.inventory[object]} {object}(s)')
 
     def attack(self, object):
@@ -19,4 +19,6 @@ class Player:
         else:
             return False
 
-    # add inventory display functions
+    def display_inventory(self):
+        for key in self.inventory.keys():
+            print(f'You have {self.inventory[key]} {key}(s)\n')

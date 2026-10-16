@@ -8,7 +8,7 @@ class Room:
         self.contents = object 
 
     def random_monster_name(self):
-        p_names = ["Orge", "Troll", "Evil Fairy", "Young Dragon", "Giant Spider"]
+        p_names = ["Ogre", "Troll", "Evil Fairy", "Young Dragon", "Giant Spider"]
         return random.choice(p_names)
 
     def random_location(self):
