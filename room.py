@@ -5,10 +5,21 @@ class Room:
         self.name = name
         self.explored = False 
         self.type = type 
-        self.contents = object 
+        self.contents = self.random_contents() 
+        if self.type == "Monster":
+            self.monster = self.random_monster_name()
+        elif self.type == "Object": 
+            self.obj = self.random_obj()
+            self.location = self.random_location()
+        elif self.type == "Boss":
+            self.boss_name = self.random_boss_name()
+
+    def random_contents(self):
+        items = ["Sword", "Sword", "Sword", "Sword", "Magic Stone", "Sword", "Sword"]
+        return random.choice(items)
 
     def random_monster_name(self):
-        p_names = ["Ogre", "Troll", "Evil Fairy", "Young Dragon", "Giant Spider"]
+        p_names = ["Orge", "Troll", "Evil Fairy", "Young Dragon", "Giant Spider"]
         return random.choice(p_names)
 
     def random_location(self):
@@ -23,21 +34,30 @@ class Room:
         p_boss = ["Smolder", "Azopolxferz", "Crimson"]
         return random.choice(p_boss)
 
+    def explore(self):
+        self.explored = True
+
+    def get_item(self):
+        if self.type == "Object": 
+            return self.contents
+        else:
+            return 0 
+
     def enter(self):
         if self.explored == True:
-            print("You enter an already explored room...")
-            return 0 
+            print("You are now in an already explored/defeated/pillaged room...")
+            return "Empty" 
         print("You enter " + self.name + "...")
-        if self.type == 0: 
+        if self.type == "Empty": 
             print("The room is empty; you are safe, for now...")
-        elif self.type == 1: 
+        elif self.type == "Monster": 
             print("Watch out! A " + str(self.random_monster_name()) +" is in the room!")
-        elif self.type == 2: 
-            print("You enter the room and find a " + str(self.random_obj()) + " " + str(self.random_location()) + ". Inside of it is " + str(self.contents))
-        elif self.type == 3:
+        elif self.type == "Object": 
+            print("You find " + str(self.random_obj()) + " " + str(self.random_location()) + ". Inside of it is a " + str(self.contents))
+        elif self.type == "Stairs":
             print("The room is bare except for a set of stairs winding upwards and downwards.")
-        elif self.type == 4:
-            print("You push open the doors, and reveal the guardian of Zayan's treasures, " + self.random_boss_name() + "!")
-
+        elif self.type == "Boss":
+            print("You push open the doors, and reveal the guardian of Zayan's treasures, " + self.random_boss_name() + " The Dragon!")
+        
         return self.type 
         
