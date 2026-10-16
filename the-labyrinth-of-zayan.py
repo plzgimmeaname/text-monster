@@ -1,4 +1,4 @@
-import maps 
+import maps as map 
 import player 
 import random 
 import room
@@ -15,7 +15,38 @@ class Game:
     def __init__(self, debug:bool = False):
         self.debug = debug
         self.player = player.Player()
-        mapgen = map.map_generation(map.PRESET_PROB, map.PRESET_STORIES, map.PRESET_ROOMS, debug=debug)
+        difficulty = None
+        while True:
+            mapdiff = int(input("<------------------------->\nDifficulty Menu:\n1. LOW\n2. MED\n3. HIGH\nChoose your option: "))
+            if mapdiff == 1:
+                difficulty = map.PRESET_PROB_LOW
+                break
+            elif mapdiff == 2:
+                difficulty = map.PRESET_PROB_MED
+                break
+            elif mapdiff == 3:
+                difficulty = map.PRESET_PROB_HARD
+                break
+            else:
+                print('Invalid input. Select either 1, 2, or 3.\n')
+                continue
+        print('<------------------>\n')
+        print("<------------------------->\nRooms Customization:\n")
+        while True:
+            try:
+                stories = int(input("How many floors would you like?: "))
+                break
+            except ValueError:
+                print('Not a valid number.')
+                continue
+        while True:
+            try:
+                rooms = int(input("How many rooms would you like?: "))
+                break
+            except ValueError:
+                print('Not a valid number.')
+                continue
+        mapgen = map.map_generation(difficulty, stories, rooms, debug=debug)
         self.game_map = mapgen[0]
         if mapgen[1] == 1:
             print("Map generated successfully.")

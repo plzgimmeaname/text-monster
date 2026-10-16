@@ -9,11 +9,15 @@ from room import Room
 
 #all_maps = [vals, vals2, vals3, vals4, vals5]
 
-PRESET_PROB = {"Empty" : 30, "Object" : 40, "Monster" : 30}
+PRESET_PROB_LOW = {"Empty" : 30, "Object" : 40, "Monster" : 30}
 
-PRESET_STORIES = 5 
+PRESET_PROB_MED = {"Empty" : 30, "Object" : 30, "Monster" : 40}
 
-PRESET_ROOMS = 4 # Wanted # - 1
+PRESET_PROB_HARD = {"Empty" : 20, "Object" : 25, "Monster" : 45}
+
+# PRESET_STORIES = 5 
+
+# PRESET_ROOMS = 4 # Wanted # - 1
 
 
 # add med_dif and high_dif lists
