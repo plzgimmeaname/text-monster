@@ -17,7 +17,12 @@ class Game:
         self.player = player.Player()
         difficulty = None
         while True:
-            mapdiff = int(input("<------------------------->\nDifficulty Menu:\n1. LOW\n2. MED\n3. HIGH\nChoose your option: "))
+            while True:
+                try:
+                    mapdiff = int(input("<------------------------->\nDifficulty Menu:\n1. LOW\n2. MED\n3. HIGH\nChoose your option: "))
+                    break
+                except ValueError:
+                    print("Invalid input. Not a number.")
             if mapdiff == 1:
                 difficulty = map.PRESET_PROB_LOW
                 break

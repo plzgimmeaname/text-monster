@@ -13,7 +13,7 @@ PRESET_PROB_LOW = {"Empty" : 30, "Object" : 40, "Monster" : 30}
 
 PRESET_PROB_MED = {"Empty" : 30, "Object" : 30, "Monster" : 40}
 
-PRESET_PROB_HARD = {"Empty" : 20, "Object" : 25, "Monster" : 45}
+PRESET_PROB_HARD = {"Empty" : 25, "Object" : 25, "Monster" : 50}
 
 # PRESET_STORIES = 5 
 
@@ -116,7 +116,7 @@ def map_generation(room_probability:dict, floors, rooms, debug = False):
             map[-1][index] = boss
             break
     map[-1].remove(boss)
-    map[-1].insert(6, boss)
+    map[-1].insert(len(map[-1]), boss)
         
     print("Map finalized.")
     print()
