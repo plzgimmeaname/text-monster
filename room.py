@@ -51,13 +51,13 @@ class Room:
         if self.type == "Empty": 
             print("The room is empty; you are safe, for now...")
         elif self.type == "Monster": 
-            print("Watch out! A " + str(self.random_monster_name()) +" is in the room!")
+            print("Watch out! A " + str(self.monster) +" is in the room!")
         elif self.type == "Object": 
-            print("You find " + str(self.random_obj()) + " " + str(self.random_location()) + ". Inside of it is a " + str(self.contents))
+            print("You find " + str(self.obj) + " " + str(self.location) + ". Inside of it is a " + str(self.contents))
         elif self.type == "Stairs":
             print("The room is bare except for a set of stairs winding upwards and downwards.")
         elif self.type == "Boss":
-            print("You push open the doors, and reveal the guardian of Zayan's treasures, " + self.random_boss_name() + " The Dragon!")
+            print("You push open the doors, and reveal the guardian of Zayan's treasures, " + self.boss_name + " The Dragon!")
         
         return self.type 
         

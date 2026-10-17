@@ -46,7 +46,7 @@ class Player:
         print()
 
     def discard(self, object):
-        if object == 'Sword':
+        if self.does_have(object):
             self.inventory[object] -= 1
-        else:
-            return False
+            return True
+        return False

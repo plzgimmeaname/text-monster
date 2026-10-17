@@ -7,7 +7,7 @@ from room import Room
 
 
 
-#all_maps = [vals, vals2, vals3, vals4, vals5]
+
 
 PRESET_PROB_LOW = {"Empty" : 30, "Object" : 40, "Monster" : 30}
 
@@ -15,26 +15,18 @@ PRESET_PROB_MED = {"Empty" : 30, "Object" : 30, "Monster" : 40}
 
 PRESET_PROB_HARD = {"Empty" : 25, "Object" : 25, "Monster" : 50}
 
-# PRESET_STORIES = 5 
-
-# PRESET_ROOMS = 4 # Wanted # - 1
-
-
-# add med_dif and high_dif lists
-
     
 
 
 
 def room_selection(values: dict):
     chance = 0 
+    prob = random.randint(1, 100)
     for val in values:
         chance += values[val]
-        prob = random.randint(0, 100)
         if prob <= chance:
             return val 
-        else: 
-            continue 
+    return val
 
 def random_room_name():
     p_room_names_1 = ["The Cellar of", "The Library of", "The Kitchen of", "The Ballroom of", "The Office of", "The Chapel of", "The Garden of", "The Tower of", "The Pool of", "The Dining Room of", "The Armory of", "The Vault of"]
@@ -44,20 +36,6 @@ def random_room_name():
 
 # for i in range(30):
 #     print(room_selection(vals1))
-def mapgen (roomtypes: dict, stories, rooms):
-    map = []
-    for i in tqdm(range(stories)):
-        floor = []
-        for i in range(rooms):
-            val = room_selection(roomtypes)
-            floor.append(Room(random_room_name(), val))
-        map.append(floor)
-    map[0][0] = Room(random_room_name(), "Empty")
-    map[-1][-1] = Room("The Treasure Hall of Zayan", "Boss")
-    for i in range(stories):
-        map[i].insert(random.randint(0, rooms), Room(random_room_name(), "Stairs"))
-    return map
-
 def map_sanity_check(map:list): 
     errors = []
     flr = 0

@@ -1,13 +1,48 @@
-import maps as map 
+import maps as dungeon
 import player 
 import random 
 import room
 import os 
 import sys 
+import getpass
 
 
 
 game_on = True 
+
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "zayan"
+
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def admin_login():
+    while True:
+        choice = input("Log in as admin to enable debug mode? (YES/NO): ").strip().upper()
+        if choice == "NO":
+            return False
+        elif choice == "YES":
+            username = input("Username: ").strip()
+            password = getpass.getpass("Password: ")
+            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+                print("Admin access granted. Debug mode enabled.\n")
+                return True
+            print("Access denied.\n")
+            return False
+        else:
+            print("I don't understand your answer. Tell me YES or NO.")
+
+def ask_positive_int(prompt):
+    while True:
+        try:
+            value = int(input(prompt))
+        except ValueError:
+            print('Not a valid number.')
+            continue
+        if value < 1:
+            print('Must be at least 1.')
+            continue
+        return value
 
 
 
@@ -24,34 +59,22 @@ class Game:
                 except ValueError:
                     print("Invalid input. Not a number.")
             if mapdiff == 1:
-                difficulty = map.PRESET_PROB_LOW
+                difficulty = dungeon.PRESET_PROB_LOW
                 break
             elif mapdiff == 2:
-                difficulty = map.PRESET_PROB_MED
+                difficulty = dungeon.PRESET_PROB_MED
                 break
             elif mapdiff == 3:
-                difficulty = map.PRESET_PROB_HARD
+                difficulty = dungeon.PRESET_PROB_HARD
                 break
             else:
                 print('Invalid input. Select either 1, 2, or 3.\n')
                 continue
         print('<------------------>\n')
         print("<------------------------->\nRooms Customization:\n")
-        while True:
-            try:
-                stories = int(input("How many floors would you like?: "))
-                break
-            except ValueError:
-                print('Not a valid number.')
-                continue
-        while True:
-            try:
-                rooms = int(input("How many rooms would you like?: "))
-                break
-            except ValueError:
-                print('Not a valid number.')
-                continue
-        mapgen = map.map_generation(difficulty, stories, rooms, debug=debug)
+        stories = ask_positive_int("How many floors would you like?: ")
+        rooms = ask_positive_int("How many rooms would you like?: ")
+        mapgen = dungeon.map_generation(difficulty, stories, rooms, debug=debug)
         self.game_map = mapgen[0]
         if mapgen[1] == 1:
             print("Map generated successfully.")
@@ -68,6 +91,7 @@ class Game:
         if self.current_room.type == "Monster" and self.current_room.explored == False:
             print("You try to flee the monster which strikes you down in the process.")
             self.alive = False 
+            return
         try: 
             self.current_room = self.game_map[self.player.y][self.player.x + 1]
             self.player.move("rightward")
@@ -77,6 +101,7 @@ class Game:
         if self.current_room.type == "Monster" and self.current_room.explored == False:
             print("You try to flee the monster which strikes you down in the process.")
             self.alive = False 
+            return
         try: 
             if (self.player.x - 1) >= 0:
                 self.current_room = self.game_map[self.player.y][self.player.x-1]
@@ -108,11 +133,9 @@ class Game:
             print("There are no stairs to climb downwards in this room.")
 
     def fight(self):
-        if self.debug:
-            return 1
-        if self.current_room.explored == True:
+        if self.current_room.explored == True or self.current_room.type not in ("Monster", "Boss"):
             print("There are no monsters to fight here.")
-            return 
+            return None
         else:
             if self.current_room.type == "Monster": 
                 if self.player.does_have("Sword"): 
@@ -130,12 +153,16 @@ class Game:
                         return 0 
             elif self.current_room.type == "Boss":
                 if self.player.does_have("Sword") and self.player.does_have("Magic Stone"):
-                    os.system('cls')
+                    clear_screen()
                     print("You fight a hard and long battle against the great and terrible dragon.")
                     print("Just before the dragon strikes you with its mighty fangs...")
                     print("Your magical gem glows, blinding the dragon.")
                     print("You strike and slay the monster!")
                     return 2 
+                else:
+                    print("The dragon is too powerful. Without both a sword and a magic stone, you are reduced to ash.")
+                    self.alive = False
+                    return 0 
 
     def inventory(self):
         self.player.display_inventory() 
@@ -180,12 +207,14 @@ class Game:
                 elif user_input == "FIGHT":
                     outcome = self.fight()
                     if outcome == 0:
-                        #os.system('cls')
+                        #clear_screen()
                         print("You have failed to delve into my labyrinth. Devoured by one of my minions.")
                         break
+                    elif outcome is None:
+                        continue
                     elif outcome == 2:
                         print("Victorious, you claim the grand prize of The Labyrinth of Zayan: An A+/100 test grade from Mr. Miller!!")
-                        print("You go home and sleep well at night, doint the world is a little safer from the threats of the Grand and Powerful Zayan...")
+                        print("You go home and sleep well at night, knowing the world is a little safer from the threats of the Grand and Powerful Zayan...")
                         print("The End.")
                         print("Thank you for playing The Labyrinth of Zayan.")
                         sys.exit(0)
@@ -199,7 +228,7 @@ class Game:
                 elif user_input == "HELP":
                     self.help()
                 if self.debug:
-                    map.render(self.game_map)
+                    dungeon.render(self.game_map)
             else:
                 print("Invalid Command.")
                 continue 
@@ -211,7 +240,7 @@ class Game:
             choice = choice.strip()
             choice = choice.upper() 
             if choice == "YES":
-                os.system('cls')
+                clear_screen()
                 return 1
             elif choice == "NO":
                 print("Then this labyrinth you shall strive against no further.")
@@ -224,12 +253,13 @@ class Game:
 
 
 if __name__ == "__main__":
-    while game_on:
-        game = Game(True)
-        end = game.loop()
-        if end == 0:
-            game_on = False 
-            break 
-        else:
-            continue
+    try:
+        while game_on:
+            game = Game(admin_login())
+            end = game.loop()
+            if end == 0:
+                game_on = False 
+                break 
+    except (EOFError, KeyboardInterrupt):
+        print()
     print("Thank you for playing The Labyrinth of Zayan.")
