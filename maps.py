@@ -1,6 +1,8 @@
 import random
 from tqdm import tqdm
+import time 
 from room import Room
+import os 
 # import names 
 
 # names.get_full_name()
@@ -15,8 +17,36 @@ PRESET_PROB_MED = {"Empty" : 30, "Object" : 30, "Monster" : 40}
 
 PRESET_PROB_HARD = {"Empty" : 25, "Object" : 25, "Monster" : 50}
 
+def move_valid(current: tuple, movement: tuple, sword: bool, map:list[list[Room]], magic_stone:bool):
+    if movement[1] != 0:
+        return False 
+    if map[current[1] + movement[1]][current[0] + movement[0]].type == "Monster":
+        return sword 
+    elif map[current[1] + movement[1]][current[0] + movement[0]].type == "Empty" or map[current[1] + movement[1]][current[0] + movement[0]].type == "Stairs" or map[current[1] + movement[1]][current[0] + movement[0]].type == "Object":
+        return True 
+    else:
+        if sword == True and magic_stone == True:
+            return True 
+        else:
+            return False 
+
+
     
 
+def mapping_algorithm(map:list[list[Room]]) -> bool:
+    monster_count = 0 
+    player_x = 0 
+    player_y = 0 
+    sword_count = 0 
+    magic_stone = 0 
+    floor = 0 
+    playing = True 
+    while playing:
+        right = 0 
+    
+
+#Easter egg: colby wuz here 
+#The above easter egg was under the request of Colby Goldberg. The following individual had no part of writing the code, but simply wanted an easter egg. 
 
 
 def room_selection(values: dict):
@@ -112,3 +142,79 @@ def map_generation(room_probability:dict, floors, rooms, debug = False, sequel =
         render(map)
     sane = map_sanity_check(map)
     return map, sane 
+
+
+def valid(map:list[list[Room]]):
+    stairs = None 
+    starting = (0,0)
+    sword = 0 
+    magic = 0 
+    for index, floor in enumerate(map):
+        if index == len(map) - 1:
+            break 
+        for jindex, room in enumerate(floor):
+            if room.type == "Stairs":
+                stairs = (jindex, index)
+        difference = stairs[0] - starting[0]
+        if difference > 0: #right
+            for i in range(difference):
+                if floor[starting[0] + (i + 1)].type == "Object":
+                    if floor[i + 1].contents == "Sword":
+                        sword += 1 
+                    else:
+                        magic += 1 
+                elif floor[starting[0] + (i + 1)].type == "Monster":
+                    if sword > 0:
+                        sword -= 1 
+                        continue 
+                    else:
+                        return False 
+                elif floor[starting[0] + (i + 1)].type == "Empty": continue 
+        else: 
+            difference = abs(difference)
+            for i in range(1, difference):
+                if floor[starting[0] - 1].type == "Object":
+                    if floor[starting[0] - 1].contents == "Sword":
+                        sword +=1 
+                    else:
+                        magic += 1 
+                elif floor[starting[0] - 1].type == "Monster":
+                    if sword > 0:
+                        sword -= 1 
+                    else:
+                        return False 
+                elif floor[starting[0] - 1].type == "Empty": pass 
+
+        starting = (stairs[0], stairs[1] + 1)
+
+    boss = (len(map) - 1 , len(map[-1]) - 1 )
+
+    room_diff = boss[0] - starting[0]
+
+    for i in range(1, room_diff): 
+        if map[-1][starting[0] + i].type == "Object":
+            if map[-1][starting[0] + i].contents == "Sword":
+                sword += 1 
+            else:
+                magic += 1 
+        elif map[-1][starting[0] + i].type == "Monster":
+            if sword > 0:
+                sword -= 1 
+            else:
+                return False 
+        elif map[-1][starting[0] + i].type == "Empty" or map[-1][starting[0] + i].type == "Stairs":
+            pass 
+        elif map[-1][starting[0] + i].type == "Boss":
+            if sword > 0 and magic > 0:
+                return True 
+            else:
+                return False 
+
+    #print("Sword: ", sword)
+    #print("Magic Stones: ", magic)
+    if sword > 0 and magic > 0:
+        return True 
+    else:
+        return False 
+
+
