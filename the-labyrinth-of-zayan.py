@@ -6,6 +6,7 @@ import os
 import sys 
 import getpass
 from item import Item, WEAPONS
+import storyline
 
 
 
@@ -100,7 +101,7 @@ class Game:
             print("<------------------------->\nRooms Customization:\n")
             stories = ask_positive_int("How many floors would you like?: ")
             rooms = ask_positive_int("How many rooms would you like?: ")
-        mapgen = dungeon.map_generation(difficulty, stories, rooms, debug=debug, sequel=sequel)
+        mapgen = dungeon.map_generation(difficulty, stories, (rooms - 1), debug=debug, sequel=sequel)
         self.game_map = mapgen[0]
         if mapgen[1] == 1:
             print("Map generated successfully.")
@@ -112,6 +113,7 @@ class Game:
 
         self.alive = True 
         self.escaped = False 
+        print(storyline.get_story(self.player.name))
         print("State the action you wish to take (use 'help' to get all valid commands)")
 
     def move_right(self):
