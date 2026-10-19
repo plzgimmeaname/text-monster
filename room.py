@@ -29,7 +29,7 @@ class Room:
             top = min(self.floor + 2, len(names))
             items = names[:top] + ["Magic Stone", "Health Potion", "Health Potion", "Health Potion"]
             return random.choice(items)
-        items = ["Sword", "Sword", "Sword", "Health Potion", "Magic Stone", "Health Potion", "Sword"]
+        items = ["Sword", "Sword", "Sword", "Magic Stone", "Magic Stone", "Sword"]
         return random.choice(items)
 
     def random_monster_name(self):

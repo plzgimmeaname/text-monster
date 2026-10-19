@@ -58,15 +58,16 @@ class Game:
         self.debug = debug
         self.window = window
         self.sequel = sequel
+        self.moves = ["right"]
         self.floors_cleared = []
         if name is None:
             name = input("What is your name, adventurer?: ").strip()
         if name == "":
             name = "Adventurer"
         self.player = player.Player(name)
-        self.player.pickup("Health Potion")
-        self.player.pickup("Health Potion")
         if sequel:
+            self.player.pickup("Health Potion")
+            self.player.pickup("Health Potion")
             difficulty = dungeon.PRESET_PROB_HARD
             stories = 5
             rooms = 6
@@ -113,11 +114,12 @@ class Game:
 
         self.alive = True 
         self.escaped = False 
-        print(storyline.get_story(self.player.name))
+        if not self.sequel:
+            print(storyline.get_story(self.player.name))
         print("State the action you wish to take (use 'help' to get all valid commands)")
-
     def move_right(self):
-        if self.current_room.type == "Monster" and self.current_room.explored == False and self.escaped == False:
+        self.moves.append("right")
+        if self.current_room.type == "Monster" and self.current_room.explored == False and self.escaped == False and not self.moves[-2] == "left":
             print("You try to flee the monster which strikes you down in the process.")
             self.alive = False 
             return
@@ -128,7 +130,8 @@ class Game:
         except IndexError: 
             print("There is no doorway to a room to the right.")
     def move_left(self):
-        if self.current_room.type == "Monster" and self.current_room.explored == False and self.escaped == False:
+        self.moves.append("left")
+        if self.current_room.type == "Monster" and self.current_room.explored == False and self.escaped == False and not self.moves[-2] == "right":
             print("You try to flee the monster which strikes you down in the process.")
             self.alive = False 
             return
@@ -142,6 +145,7 @@ class Game:
         except IndexError: 
             print("There is no doorway to a room to the left.")
     def move_up(self):
+        self.moves.append('up')
         if self.current_room.type == "Stairs":
             try:
                 if (self.player.y - 1) >= 0:
@@ -154,6 +158,7 @@ class Game:
         else:
             print("There are no stairs to climb upwards in this room.")
     def move_down(self):
+        self.moves.append('down')
         if self.current_room.type == "Stairs":
             if self.sequel and self.player.y not in self.floors_cleared:
                 print("The stairs are sealed until the guardian of this floor falls.")
@@ -236,6 +241,43 @@ class Game:
                 return 2
             return 1
 
+    def prequel_fight(self):
+        if self.debug:
+            return 1
+        if self.current_room.explored == True:
+            print("There are no monsters to fight here.")
+            return 
+        else:
+            if self.current_room.type == "Monster": 
+                if self.player.does_have("Sword"): 
+                    print('OK')
+                    print("You attack and defeat the monster. Huzzah!")
+                    self.player.discard("Sword")
+                    return 1 
+                else:
+                    if self.player.does_have("Magic Stone"):
+                        print('OK')
+                        print("You are caught offguard without a weapon, but your magic stone dissolves into light and banishes the monster, saving you.")
+                        self.player.discard("Magic Stone")
+                        return 1 
+                    else:
+                        print("You are caught offguard without a weapon and are swiftly devoured by the monster.")
+                        self.alive = False
+                        return 0 
+            elif self.current_room.type == "Boss":
+                if self.player.does_have("Sword") and self.player.does_have("Magic Stone"):
+                    os.system('cls')
+                    print("You fight a hard and long battle against the great and terrible dragon.")
+                    print("Just before the dragon strikes you with its mighty fangs...")
+                    print("Your magical gem glows, blinding the dragon.")
+                    print("You strike and slay the monster!")
+                    return 2
+                else:
+                    print('You fail to fight the mighty dragon guarding the treasure of Zayan.') 
+                    print('You lie on the ground, staring at the ceiling, watching as your life slowly ebbs away from you.')
+                    self.alive = False
+                    return 0
+
     def inventory(self):
         self.player.display_inventory() 
 
@@ -261,7 +303,7 @@ class Game:
         print()
 
 
-    def loop(self):  
+    def loop(self):
         while self.alive: 
             print() 
             print("<--- Room " + str(self.player.x + 1) + " | Floor " + str(self.player.y + 1) + " --->")   
@@ -282,24 +324,34 @@ class Game:
                 elif user_input == "DOWN":
                     self.move_down()
                 elif user_input == "FIGHT":
-                    outcome = self.fight()
-                    if outcome == 0:
-                        #clear_screen()
-                        print("You have failed to delve into my labyrinth. Slain by one of my minions.")
-                        break
-                    elif outcome is None:
-                        continue
-                    elif outcome == 2 and self.sequel:
-                        print("Zayan falls, and the labyrinth crumbles into dust around you.")
-                        print("Victorious, you walk out into the sunlight, the true master of the Labyrinth.")
-                        print("The End.")
-                        return 0
-                    elif outcome == 2:
-                        print("Victorious, you claim the grand prize of The Labyrinth of Zayan: An A+/100 test grade from Mr. Miller!!")
-                        print("You go home and sleep well at night, knowing the world is a little safer from the threats of the Grand and Powerful Zayan...")
-                        print("The End.")
-                        return 2
-                    self.current_room.explore()
+                    if not self.sequel:
+                        outcome = self.prequel_fight()
+                        if outcome == 0:
+                            #clear_screen()
+                            print("You have failed to delve into my labyrinth. Slain by one of my minions.")
+                            break
+                        elif outcome is None:
+                            continue
+                        elif outcome == 2:
+                            print("Victorious, you claim the grand prize of The Labyrinth of Zayan: An A+/100 test grade from Mr. Miller!!")
+                            print("You go home and sleep well at night, knowing the world is a little safer from the threats of the Grand and Powerful Zayan...")
+                            print("The End.")
+                            return 2
+                        self.current_room.explore()
+                    else:
+                        outcome = self.fight()
+                        if outcome == 0:
+                            #clear_screen()
+                            print("You have failed to delve into my labyrinth. Slain by one of my minions.")
+                            break
+                        elif outcome is None:
+                            continue
+                        elif outcome == 2:
+                            print("Zayan falls, and the labyrinth crumbles into dust around you.")
+                            print("Victorious, you walk into the Portal of Exit and out into the sunlight, the true master of the Labyrinth.")
+                            print("The End.")
+                            return 0
+                        self.current_room.explore()
                 elif user_input == "INVENTORY":
                     self.inventory() 
                 elif user_input == "STATUS":
@@ -342,7 +394,8 @@ def launch_sequel(name):
         print("The sequel needs pygame to open its window. Install it with: pip install pygame")
         return
     print()
-    print("A hidden door grinds open behind the throne... a deeper labyrinth awaits.")
+    print("You have defeated the Guardian of the Outer Tomb. However, Zayan has sealed the way out with a magical barrier.")
+    print("In order to defeat him, you must go further down to beat Zayan himself and enter through the Portal of Exit.")
     print("A window opens: The Labyrinth of Zayan II.")
     sequel_window = window_game.WindowGame()
     sequel_window.hero_name = name
