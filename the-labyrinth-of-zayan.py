@@ -63,6 +63,8 @@ class Game:
         if name == "":
             name = "Adventurer"
         self.player = player.Player(name)
+        self.player.pickup("Health Potion")
+        self.player.pickup("Health Potion")
         if sequel:
             difficulty = dungeon.PRESET_PROB_HARD
             stories = 5
@@ -72,8 +74,6 @@ class Game:
             self.player.atk = 2
             self.player.equip_weapon(Item("Rusty Dagger", [("attack", WEAPONS["Rusty Dagger"])], 1))
             self.player.pickup("Magic Stone")
-            self.player.pickup("Health Potion")
-            self.player.pickup("Health Potion")
             print("<------------------------->\nThe Labyrinth of Zayan II\n")
         else:
             difficulty = None
@@ -218,11 +218,11 @@ class Game:
                 self.alive = False
                 return 0
             print("You defeat " + monster.name + ". Huzzah!")
+            if self.current_room.type == "Monster":
+                self.player.heal(self.player.max // 8)
             if self.sequel:
                 for message in self.player.gain_xp(monster.max):
                     print(message)
-                if self.current_room.type == "Monster":
-                    self.player.heal(self.player.max // 4)
             if self.current_room.type == "Boss":
                 if self.sequel:
                     self.floors_cleared.append(self.player.y)

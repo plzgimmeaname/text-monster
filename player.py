@@ -6,9 +6,9 @@ class Player:
 
     def __init__(self, name):
         self.name = name 
-        self.hp = 10
-        self.max = 10
-        self.atk = 1
+        self.hp = 20
+        self.max = 20
+        self.atk = 2
         self.dodge = 0.05
         self.speed = 2
         self.level = 1
