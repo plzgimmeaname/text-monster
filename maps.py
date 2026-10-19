@@ -71,7 +71,7 @@ def render(map:dict):
     print()
 
 
-def map_generation(room_probability:dict, floors, rooms, debug = False):
+def map_generation(room_probability:dict, floors, rooms, debug = False, sequel = False):
     map = [] 
     print("Generating floors...")
     for i in tqdm(range(floors)):
@@ -79,7 +79,7 @@ def map_generation(room_probability:dict, floors, rooms, debug = False):
         print("Generating rooms for floor " + str(i) + "...")
         for j in tqdm(range(rooms)):
             room_type = room_selection(room_probability)
-            floor.append(Room(random_room_name(), room_type))
+            floor.append(Room(random_room_name(), room_type, floor=i, sequel=sequel))
         map.append(floor)
     print("Generating stairs...")
     for i in tqdm(range(floors)):
@@ -88,13 +88,20 @@ def map_generation(room_probability:dict, floors, rooms, debug = False):
         else:
             map[i].insert(random.randint(0, rooms), Room(random_room_name(), "Stairs"))
     map[0][0] = Room("The Antechamber of the Labyrinth", "Empty")
-    for index in range(len(map[-1])):
-        if map[-1][index].type != "Stairs":
-            boss = Room("The Treasure Hall of Zayan", "Boss")
-            map[-1][index] = boss
-            break
-    map[-1].remove(boss)
-    map[-1].insert(len(map[-1]), boss)
+    if sequel:
+        for i in range(floors):
+            if i == floors - 1:
+                map[i].append(Room("The Throne of Zayan", "Boss", floor=i, sequel=True, final=True))
+            else:
+                map[i].append(Room("The Guardian Hall of Floor " + str(i + 1), "Boss", floor=i, sequel=True))
+    if not sequel:
+        for index in range(len(map[-1])):
+            if map[-1][index].type != "Stairs":
+                boss = Room("The Treasure Hall of Zayan", "Boss")
+                map[-1][index] = boss
+                break
+        map[-1].remove(boss)
+        map[-1].insert(len(map[-1]), boss)
         
     print("Map finalized.")
     print()

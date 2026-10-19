@@ -38,15 +38,10 @@ class Monster:
         return f"The monster took {damage} points of damage."
 
     def heal(self, health:int):
-        gain = self.hp + health
-        if (self.hp + gain) > self.max:
-            self.hp = self.max
-        else:
-            self.hp += gain 
+        self.hp = min(self.hp + health, self.max)
         return f"The monster healed for {health} points of health."
 
-    def alive(self):
+    def is_alive(self):
         if self.hp <= 0:
             self.alive = False 
         return self.alive
- 

@@ -8,3 +8,12 @@ class Item:
     def get_stat_effects(self):
         return self.stat_effects
 
+
+
+WEAPONS = {
+    "Rusty Dagger": 1,
+    "Iron Sword": 3,
+    "Steel Blade": 5,
+    "Flame Axe": 7,
+    "Zayan's Bane": 10,
+}
