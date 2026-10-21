@@ -1,9 +1,14 @@
-#player class for defining movement, attack, inventory, etc.
+# Names: Sreekar Karra, Zayan Sikder, John Steele
+# Period: 2
+# Date Last Edited: 10/20/26
+
+#Configure imports 
 import random
 from item import Item
 
+# Class for the player 
 class Player:
-
+    #Constructor: Sets name and the base stats / fresh start 
     def __init__(self, name):
         self.name = name 
         self.hp = 20
@@ -18,6 +23,7 @@ class Player:
         self.x = 0 
         self.y = 0 
 
+    # Change x, y coordinates with player notifiction. 
     def move(self, direction):
         print(f'You move {direction}.\n')
         if direction == "rightward":
@@ -34,7 +40,8 @@ class Player:
                 pass
             else:
                 self.y -= 1 
-        
+    
+    # Adds item to inventory, max limit checked in main loop 
     def pickup(self, object):
         try:
             self.inventory[object] += 1
@@ -42,6 +49,7 @@ class Player:
             self.inventory[object] = 1
         print(f'You now have {self.inventory[object]} {object}(s)')
 
+    # Applies the weapon's bonus to attack power of player
     def weapon_bonus(self):
         if self.weapon is None:
             return 0
@@ -51,6 +59,7 @@ class Player:
                 bonus += effect[1]
         return bonus
 
+    #Checks if one weapon is better than other, equips/keeps the best one 
     def equip_weapon(self, item:Item):
         if item.equip != 1:
             return False
@@ -66,6 +75,7 @@ class Player:
         print(f"The {item.name} is no better than your {self.weapon.name}, so you leave it behind.")
         return False
 
+    #Gain expierence plus level up check to see if you level up and gain power 
     def gain_xp(self, amount:int):
         self.xp += amount
         messages = []
@@ -78,6 +88,7 @@ class Player:
             messages.append(f"You reach level {self.level}! Your health is restored.")
         return messages
 
+    #A gives attack damage plus random increase, in stage 1 the basic sword item allows for instant kills 
     def attack(self):
         rand_increase = random.randint(1,3)
         rand_increase += self.weapon_bonus()
@@ -85,32 +96,39 @@ class Player:
             rand_increase += 3
         return self.atk + rand_increase
 
+    # Checks if player dodge sthe attack 
     def dodged(self):
         probabilty = random.randint(1, 100)
         return probabilty < self.dodge * 100
 
+    #Player takes damage function
     def take_damage(self, damage:int):
         self.hp = max(self.hp - damage, 0)
         return f"You took {damage} points of damage."
 
+    #When player heals with stone or potion, make sure they cannot heal past max 
     def heal(self, health:int):
         self.hp = min(self.hp + health, self.max)
 
+    #Checks if player died 
     def is_alive(self):
         return self.hp > 0
 
+    #Shows user the check stats of the character 
     def check_status(self):
         print()
         weapon = self.weapon.name if self.weapon is not None else "None"
         print(f"{self.name} | LVL: {self.level} ({self.xp}/{self.level * 10} XP) | HP: {self.hp}/{self.max} | ATK: {self.atk} | DODGE: {self.dodge} | SPEED: {self.speed} | WEAPON: {weapon}")
         print()
 
+    #Checks if player has certain object in inventory 
     def does_have(self, object:str):
         if self.inventory.get(object, 0) >= 1:
             return True 
         else:
             return False 
 
+    #Renders inventory for user 
     def display_inventory(self):
         print()
         print("|--- Inventory Menu ---|")
@@ -119,107 +137,10 @@ class Player:
         print("|----------------------|")
         print()
 
+    #Gets rid of an item
     def discard(self, object):
         if self.does_have(object):
             self.inventory[object] -= 1
             return True
         return False
 
-
-class Main_Character:
-    def __init__(self, name):
-        self.name = name 
-        self.hp = 10 
-        self.max = 10 
-        self.atk = 1 
-        self.dodge = 0.01
-        self.speed = 1 
-        self.x = 0 
-        self.y = 0 
-        self.inventory = {}
-        self.hand_equip = None
-        self.armor_equip = None 
-        self.accessory_equip = None 
-
-    def move(self, direction:int):
-        if direction == 1: 
-            self.y -= 1 
-            return "You move upward"
-        elif direction == 2:
-            self.x += 1
-            return "You move rightward"
-        elif direction == 3:
-            self.y += 1 
-            return "You move downward"
-        else:
-            self.x -= 1 
-            return "You move leftward"
-
-    def pickup(self, item:Item):
-        if item.name in self.inventory.keys():
-            self.inventory[item.name] += 1 
-        else:
-            self.inventory[item.name] = 1 
-
-        return f"You pick up a {item.name}"
-
-    def apply_status_effects(self, item:Item):
-        effects = item.get_stat_effects()
-
-        for effect in effects:
-            stat = effect[0]
-            amount = effect[1]
-
-            if stat == "hp":
-                self.hp = min(self.hp + amount, self.max)
-            elif stat == "max":
-                self.max += amount 
-            elif stat == "speed":
-                self.speed += amount 
-            elif stat == "dodge":
-                self.dodge += amount 
-            elif stat == "attack":
-                self.atk += amount 
-
-        return "You equip the item and gain its stats. Check your status for more info."
-
-    def remove_status_effects(self, item:Item):
-        effects = item.get_stat_effects()
-
-        for effect in effects:
-            stat = effect[0]
-            amount = effect[1]
-
-            if stat == "hp":
-                self.hp = max(self.hp - amount, 1)
-            elif stat == "max":
-                self.max -= amount 
-                self.hp = min(self.hp, self.max)
-            elif stat == "speed":
-                self.speed -= amount 
-            elif stat == "dodge":
-                self.dodge -= amount 
-            elif stat == "attack":
-                self.atk -= amount 
-
-        return "You unequip the item and lose its stats. Check your status for more info."
-
-    def check_status(self):
-        status = f"{self.name} | HP: {self.hp}/{self.max} | ATK: {self.atk} | DODGE: {self.dodge} | SPEED: {self.speed}"
-        return status 
-
-    def equip(self, item:Item):
-        slots = {1: "hand_equip", 2: "armor_equip", 3: "accessory_equip"}
-        slot = slots.get(item.equip)
-        if slot is None:
-            return "You cannot equip that."
-        if self.inventory.get(item.name, 0) < 1:
-            return f"You do not have a {item.name}."
-        current = getattr(self, slot)
-        if current is not None:
-            self.inventory[current.name] = self.inventory.get(current.name, 0) + 1 
-            self.remove_status_effects(current)
-        setattr(self, slot, item)
-        self.apply_status_effects(item)
-        self.inventory[item.name] -= 1 
-        return f"You equip the {item.name}."

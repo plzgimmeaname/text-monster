@@ -1,4 +1,8 @@
+# Names: Sreekar Karra, Zayan Sikder, John Steele
+# Period: 2
+# Date Last Edited: 10/20/26
 
+# Simple function that returns a length description of each room, descriptions created by Zayan. 
 def get_description(name:str):
     if name == "The Cellar of Sin":
         return "The Cellar of Sin is a gathering place for demons that were outcasted by the creatures on the higher end of the hierarchy."

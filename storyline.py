@@ -1,3 +1,7 @@
+# Names: Sreekar Karra, Zayan Sikder, John Steele
+# Period: 2
+# Date Last Edited: 10/20/26
+
 import random
 import names
 
@@ -135,6 +139,7 @@ Maybe this is a reality check for all the times you have been rude to people. Ma
 
 ]
 
+#Generates random backstory for the game using the names library to randomly generate a random name for the placeholders 
 def get_story(name: str):
     selected_backstory = random.choice(backstories)
     selected_backstory = selected_backstory.replace("player name", name)

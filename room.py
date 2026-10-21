@@ -1,9 +1,16 @@
+# Names: Sreekar Karra, Zayan Sikder, John Steele
+# Period: 2
+# Date Last Edited: 10/20/26
+
+#Configure imports 
 import random
 from monster import Monster
 from item import WEAPONS
 from descriptions import get_description
 
+#Create the room class
 class Room:
+    #Constructor allows needs name and type, allows us to set what floor they are on, if they are in stage 2, and if they are the final boss 
     def __init__(self, name, type, object=None, floor:int = 0, sequel:bool = False, final:bool = False):
         self.name = name
         self.explored = False 
@@ -25,6 +32,7 @@ class Room:
             else:
                 self.monster = Monster(self.boss_name, 20, 2, 0.05, 2)
 
+    #Gets random item. Either Magic stone or sword in stage 1, or list of weapons, magic stone or healing potion in stage 2 
     def random_contents(self):
         if self.sequel:
             names = list(WEAPONS.keys())
@@ -34,10 +42,12 @@ class Room:
         items = ["Sword", "Sword", "Sword", "Magic Stone", "Magic Stone", "Sword"]
         return random.choice(items)
 
+    #Gets a random name for monster
     def random_monster_name(self):
         p_names = ["Orge", "Troll", "Evil Fairy", "Young Dragon", "Giant Spider"]
         return random.choice(p_names)
 
+    #Defines the stats of each type of monster 
     def random_monster(self):
         stats = {
             "Orge": (8, 2, 0.05, 1),
@@ -48,22 +58,27 @@ class Room:
         }
         name = self.random_monster_name()
         hp, attack, dodge_chance, speed = stats[name]
+        #Slightly scales monsters with floor to make them progressively more difficult 
         if self.sequel:
             scale = 1 + 0.25 * self.floor
             hp = int(hp * scale)
             attack = int(attack * scale)
             dodge_chance = min(dodge_chance + 0.02 * self.floor, 0.5)
             speed = speed + self.floor // 2
+        #Creates monster object using these stats 
         return Monster(name, hp, attack, dodge_chance, speed)
 
+    #Adds flavor text for where object is found 
     def random_location(self):
         p_locations = ["in the corner of the room", "in the center of the room", "just behind the door", "set upon an old stone bench"]
         return random.choice(p_locations) 
 
+    #Adds flavor text for the container of the object 
     def random_obj(self):
         p_obj = ["a crate", "a desk", "a chest", "a coffer"]
         return random.choice(p_obj)
 
+    # If it is stage 1: Give a random name from boss list, or give name of mini-boss / boss based on the floor 
     def random_boss_name(self):
         if self.sequel:
             p_sequel_boss = ["Smolder", "Azopolxferz", "Crimson", "The Hollow King", "Zayan, Master of the Labyrinth"]
@@ -73,19 +88,23 @@ class Room:
         p_boss = ["Smolder", "Azopolxferz", "Crimson"]
         return random.choice(p_boss)
 
+    #Gets boss stats for sequel, scaled for each floor 
     def sequel_boss(self):
         scale = self.floor
         return Monster(self.boss_name, 20 + 12 * scale, 2 + scale, 0.05 + 0.02 * scale, 2 + scale // 2)
 
+    #Setter function that basically just says: player has already done everything they can in this room
     def explore(self):
         self.explored = True
 
+    #Getter function for room item
     def get_item(self):
         if self.type == "Object": 
             return self.contents
         else:
             return 0 
 
+    # Player encounter with the room, if explored: default to 'nothing here' statement, if first time: print longer description, and finally various text for each specific type of room
     def enter(self):
         if self.explored == True:
             print("You are now in an already explored/defeated/pillaged room...")
