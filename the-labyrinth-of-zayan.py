@@ -39,15 +39,15 @@ def admin_login():
         else:
             print("I don't understand your answer. Tell me YES or NO.")
 
-def ask_positive_int(prompt):
+def ask_min_int(prompt, minimum):
     while True:
         try:
             value = int(input(prompt))
         except ValueError:
             print('Not a valid number.')
             continue
-        if value < 1:
-            print('Must be at least 1.')
+        if value < minimum:
+            print('Must be at least ' + str(minimum) + '.')
             continue
         return value
 
@@ -100,12 +100,12 @@ class Game:
                     continue
             print('<------------------>\n')
             print("<------------------------->\nRooms Customization:\n")
-            stories = ask_positive_int("How many floors would you like?: ")
-            rooms = ask_positive_int("How many rooms would you like?: ")
+            stories = ask_min_int("How many floors would you like? (minimum 4): ", 4)
+            rooms = ask_min_int("How many rooms would you like per floor? (minimum 5): ", 5)
         while True: 
             mapgen = dungeon.map_generation(difficulty, stories, (rooms - 1), debug=debug, sequel=sequel)
             self.game_map = mapgen[0]
-            if dungeon.valid(self.game_map):
+            if sequel or dungeon.valid(self.game_map):
                 break
             else:
                 continue 
@@ -121,7 +121,7 @@ class Game:
         print("State the action you wish to take (use 'help' to get all valid commands)")
     def move_right(self):
         self.moves.append("right")
-        if self.current_room.type == "Monster" and self.current_room.explored == False and self.escaped == False and not self.moves[-2] == "left":
+        if self.current_room.type in ("Monster", "Boss") and self.current_room.explored == False and self.escaped == False and not self.moves[-2] == "left":
             print("You try to flee the monster which strikes you down in the process.")
             self.alive = False 
             return
@@ -133,7 +133,7 @@ class Game:
             print("There is no doorway to a room to the right.")
     def move_left(self):
         self.moves.append("left")
-        if self.current_room.type == "Monster" and self.current_room.explored == False and self.escaped == False and not self.moves[-2] == "right":
+        if self.current_room.type in ("Monster", "Boss") and self.current_room.explored == False and self.escaped == False and not self.moves[-2] == "right":
             print("You try to flee the monster which strikes you down in the process.")
             self.alive = False 
             return
@@ -252,23 +252,16 @@ class Game:
         else:
             if self.current_room.type == "Monster": 
                 if self.player.does_have("Sword"): 
-                    print('OK')
                     print("You attack and defeat the monster. Huzzah!")
                     self.player.discard("Sword")
                     return 1 
                 else:
-                    if self.player.does_have("Magic Stone"):
-                        print('OK')
-                        print("You are caught offguard without a weapon, but your magic stone dissolves into light and banishes the monster, saving you.")
-                        self.player.discard("Magic Stone")
-                        return 1 
-                    else:
-                        print("You are caught offguard without a weapon and are swiftly devoured by the monster.")
-                        self.alive = False
-                        return 0 
+                    print("You are caught offguard without a weapon and are swiftly devoured by the monster.")
+                    self.alive = False
+                    return 0 
             elif self.current_room.type == "Boss":
                 if self.player.does_have("Sword") and self.player.does_have("Magic Stone"):
-                    os.system('cls')
+                    clear_screen()
                     print("You fight a hard and long battle against the great and terrible dragon.")
                     print("Just before the dragon strikes you with its mighty fangs...")
                     print("Your magical gem glows, blinding the dragon.")
@@ -287,6 +280,9 @@ class Game:
         item = self.current_room.get_item() 
         if item == 0 or self.current_room.explored == True:
             print("This room does not have any items in it")
+            return False
+        elif not self.sequel and sum(self.player.inventory.values()) >= 3:
+            print("You can only carry three items. The item stays in the room.")
             return False
         elif item in WEAPONS:
             self.player.equip_weapon(Item(item, [("attack", WEAPONS[item])], 1))

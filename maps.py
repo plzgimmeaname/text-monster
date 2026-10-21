@@ -132,6 +132,7 @@ def map_generation(room_probability:dict, floors, rooms, debug = False, sequel =
                 break
         map[-1].remove(boss)
         map[-1].insert(len(map[-1]), boss)
+        fix_map(map)
         
     print("Map finalized.")
     print()
@@ -144,88 +145,114 @@ def map_generation(room_probability:dict, floors, rooms, debug = False, sequel =
     return map, sane 
 
 
-def valid(map:list[list[Room]]):
-    monst = 0 
-    for floor in map:
-        for room in floor: 
-            if room.type == "Monster":
-                monst += 1 
-    stairs = None 
-    starting = (0,0)
-    sword = 0 
-    total_sword = 0 
-    magic = 0 
-    for index, floor in enumerate(map):
-        if index == len(map) - 1:
-            break 
-        for jindex, room in enumerate(floor):
-            if room.type == "Stairs":
-                stairs = (jindex, index)
-        difference = stairs[0] - starting[0]
-        if difference > 0: #right
-            for i in range(difference):
-                if floor[starting[0] + (i + 1)].type == "Object":
-                    if floor[i + 1].contents == "Sword":
-                        sword += 1 
-                        total_sword += 1 
-                    else:
-                        magic += 1 
-                elif floor[starting[0] + (i + 1)].type == "Monster":
-                    if sword > 0:
-                        sword -= 1 
-                        continue 
-                    else:
-                        return False 
-                elif floor[starting[0] + (i + 1)].type == "Empty": continue 
-        else: 
-            difference = abs(difference)
-            for i in range(1, difference):
-                if floor[starting[0] - 1].type == "Object":
-                    if floor[starting[0] - 1].contents == "Sword":
-                        sword +=1 
-                        total_sword += 1 
-                    else:
-                        magic += 1 
-                elif floor[starting[0] - 1].type == "Monster":
-                    if sword > 0:
-                        sword -= 1 
-                    else:
-                        return False 
-                elif floor[starting[0] - 1].type == "Empty": pass 
+def stairs_column(floor:list[Room]):
+    for index in range(len(floor)):
+        if floor[index].type == "Stairs":
+            return index
 
-        starting = (stairs[0], stairs[1] + 1)
+def get_path(map:list[list[Room]]):
+    path = []
+    x = 0 
+    for i in range(len(map)):
+        if i == len(map) - 1:
+            target = len(map[i]) - 1 
+        else:
+            target = stairs_column(map[i])
+        if target >= x:
+            step = 1 
+        else:
+            step = -1 
+        for col in range(x, target + step, step):
+            if not (i == 0 and col == 0):
+                path.append((i, col))
+        x = target 
+    return path 
 
-    boss = (len(map) - 1 , len(map[-1]) - 1 )
+def change_room(floor:list[Room], col:int, kind:str, contents = None):
+    new_room = Room(floor[col].name, kind)
+    if contents != None:
+        new_room.contents = contents 
+    floor[col] = new_room 
 
-    room_diff = boss[0] - starting[0]
-
-    for i in range(1, room_diff): 
-        if map[-1][starting[0] + i].type == "Object":
-            if map[-1][starting[0] + i].contents == "Sword":
-                sword += 1 
-                total_sword += 1 
-            else:
-                magic += 1 
-        elif map[-1][starting[0] + i].type == "Monster":
-            if sword > 0:
-                sword -= 1 
-            else:
-                return False 
-        elif map[-1][starting[0] + i].type == "Empty" or map[-1][starting[0] + i].type == "Stairs":
-            pass 
-        elif map[-1][starting[0] + i].type == "Boss":
-            if sword > 0 and magic > 0 and total_sword >= 4 and monst >= 3:
+def place_item(map:list[list[Room]], path:list, index:int, item:str):
+    for kind in ("Empty", "Object"):
+        for j in range(index - 1, -1, -1):
+            if map[path[j][0]][path[j][1]].type == kind:
+                change_room(map[path[j][0]], path[j][1], "Object", item)
                 return True 
-            else:
+    return False 
+
+def path_pass(map:list[list[Room]], path:list, patch:bool):
+    swords = 0 
+    stones = 0 
+    for index in range(len(path)):
+        i = path[index][0]
+        j = path[index][1]
+        room = map[i][j]
+        if room.type == "Object":
+            if room.contents == "Sword" and swords + stones < 3 and (stones == 1 or swords + stones < 2):
+                swords += 1 
+            elif room.contents == "Magic Stone" and stones == 0:
+                stones += 1 
+        elif room.type == "Monster":
+            if swords == 0:
+                if patch and not place_item(map, path, index, "Sword"):
+                    change_room(map[i], j, "Empty")
                 return False 
+            swords -= 1 
+        elif room.type == "Boss":
+            if swords > 0 and stones > 0:
+                return True 
+            if patch:
+                if stones == 0:
+                    place_item(map, path, index, "Magic Stone")
+                else:
+                    place_item(map, path, index, "Sword")
+            return False 
+    return False 
 
-    # print("Sword: ", sword)
-    # print("Magic Stones: ", magic)
-    # print("Monsters: ", monst)
-    # print("Total Swords: ", total_sword)
-    if sword > 0 and magic > 0:
-        return True 
-    else:
+def fix_map(map:list[list[Room]]):
+    path = get_path(map)
+    for attempt in range(300):
+        if path_pass(map, path, True):
+            break 
+    monsters = 0 
+    swords = 0 
+    off_path = []
+    on_path = []
+    for i in range(len(map)):
+        for j in range(len(map[i])):
+            room = map[i][j]
+            if room.type == "Monster":
+                monsters += 1 
+            elif room.type == "Object" and room.contents == "Sword":
+                swords += 1 
+            elif room.type == "Empty" and (i, j) != (0, 0):
+                if (i, j) in path:
+                    on_path.append((i, j))
+                else:
+                    off_path.append((i, j))
+    random.shuffle(off_path)
+    random.shuffle(on_path)
+    while monsters < 3 and len(off_path) > 0:
+        spot = off_path.pop()
+        change_room(map[spot[0]], spot[1], "Monster")
+        monsters += 1 
+    spots = off_path + on_path 
+    while swords < 4 and len(spots) > 0:
+        spot = spots.pop()
+        change_room(map[spot[0]], spot[1], "Object", "Sword")
+        swords += 1 
+
+def valid(map:list[list[Room]]):
+    monsters = 0 
+    swords = 0 
+    for floor in map:
+        for room in floor:
+            if room.type == "Monster":
+                monsters += 1 
+            elif room.type == "Object" and room.contents == "Sword":
+                swords += 1 
+    if monsters < 3 or swords < 4:
         return False 
-
-
+    return path_pass(map, get_path(map), False)

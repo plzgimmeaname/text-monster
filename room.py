@@ -1,11 +1,13 @@
 import random
 from monster import Monster
 from item import WEAPONS
+from descriptions import get_description
 
 class Room:
     def __init__(self, name, type, object=None, floor:int = 0, sequel:bool = False, final:bool = False):
         self.name = name
         self.explored = False 
+        self.visited = False 
         self.type = type 
         self.floor = floor 
         self.sequel = sequel 
@@ -89,6 +91,11 @@ class Room:
             print("You are now in an already explored/defeated/pillaged room...")
             return "Empty" 
         print("You enter " + self.name + "...")
+        if self.visited == False:
+            description = get_description(self.name)
+            if description != None:
+                print(description)
+            self.visited = True
         if self.type == "Empty": 
             print("The room is empty; you are safe, for now...")
         elif self.type == "Monster": 
