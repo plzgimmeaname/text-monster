@@ -102,12 +102,14 @@ class Game:
             print("<------------------------->\nRooms Customization:\n")
             stories = ask_positive_int("How many floors would you like?: ")
             rooms = ask_positive_int("How many rooms would you like?: ")
-        mapgen = dungeon.map_generation(difficulty, stories, (rooms - 1), debug=debug, sequel=sequel)
-        self.game_map = mapgen[0]
-        if mapgen[1] == 1:
-            print("Map generated successfully.")
-        else:
-            print("Map generated with errors.")
+        while True: 
+            mapgen = dungeon.map_generation(difficulty, stories, (rooms - 1), debug=debug, sequel=sequel)
+            self.game_map = mapgen[0]
+            if dungeon.valid(self.game_map):
+                break
+            else:
+                continue 
+        print("Map Generated Sucessfully") 
         self.current_room: room.Room = self.game_map[self.player.y][self.player.x]
 
         self.valid_commands = ["RIGHT", "LEFT", "UP", "DOWN", "FIGHT", "INVENTORY", "STATUS", "PICKUP", "HELP"]# trying new way to do if-else inputs 
