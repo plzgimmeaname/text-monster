@@ -145,9 +145,15 @@ def map_generation(room_probability:dict, floors, rooms, debug = False, sequel =
 
 
 def valid(map:list[list[Room]]):
+    monst = 0 
+    for floor in map:
+        for room in floor: 
+            if room.type == "Monster":
+                monst += 1 
     stairs = None 
     starting = (0,0)
     sword = 0 
+    total_sword = 0 
     magic = 0 
     for index, floor in enumerate(map):
         if index == len(map) - 1:
@@ -161,6 +167,7 @@ def valid(map:list[list[Room]]):
                 if floor[starting[0] + (i + 1)].type == "Object":
                     if floor[i + 1].contents == "Sword":
                         sword += 1 
+                        total_sword += 1 
                     else:
                         magic += 1 
                 elif floor[starting[0] + (i + 1)].type == "Monster":
@@ -176,6 +183,7 @@ def valid(map:list[list[Room]]):
                 if floor[starting[0] - 1].type == "Object":
                     if floor[starting[0] - 1].contents == "Sword":
                         sword +=1 
+                        total_sword += 1 
                     else:
                         magic += 1 
                 elif floor[starting[0] - 1].type == "Monster":
@@ -195,6 +203,7 @@ def valid(map:list[list[Room]]):
         if map[-1][starting[0] + i].type == "Object":
             if map[-1][starting[0] + i].contents == "Sword":
                 sword += 1 
+                total_sword += 1 
             else:
                 magic += 1 
         elif map[-1][starting[0] + i].type == "Monster":
@@ -205,13 +214,15 @@ def valid(map:list[list[Room]]):
         elif map[-1][starting[0] + i].type == "Empty" or map[-1][starting[0] + i].type == "Stairs":
             pass 
         elif map[-1][starting[0] + i].type == "Boss":
-            if sword > 0 and magic > 0:
+            if sword > 0 and magic > 0 and total_sword >= 4 and monst >= 3:
                 return True 
             else:
                 return False 
 
-    #print("Sword: ", sword)
-    #print("Magic Stones: ", magic)
+    # print("Sword: ", sword)
+    # print("Magic Stones: ", magic)
+    # print("Monsters: ", monst)
+    # print("Total Swords: ", total_sword)
     if sword > 0 and magic > 0:
         return True 
     else:
